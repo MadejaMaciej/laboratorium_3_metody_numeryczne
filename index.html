@@ -5,28 +5,167 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Metody Numeryczne - labolatorium nr. 3 - Metoda siecznych oraz bisekcji</title>
-    <style type="text/css">
-        
-    </style>
 </head>
 <body>
-    <header id="head">
-
-    </header>
+    <div style="text-align:center;">
     <section id="instructions">
-
+        <p style="text-align: center">
+            1. Wpisz do pól zakres, w którym chcesz znaleźć miejsca zerowe lub punkty dla pierwszej siecznej. 
+        </p>
+        <p style="text-align: center">
+            2. Wybierz ilości cyfr znaczących w liczbach. 
+        </p>
+        <p style="text-align: center">
+            3. Wybierz metodę, którą chcesz znaleźć miejsca zerowe klikając w przycisk. 
+        </p>
     </section>
     <section id="data">
-
+        <div style="display: flex; text-align: center; margin: 40px 0px;">
+            <label style="margin: 0 auto;">
+                x<sub>1</sub><br />
+                <input type="text" id="x1"value="-2" style="text-align: right">
+            </label>
+            <label  style="margin: 0 auto;">
+                x<sub>2</sub> <br />
+                <input type="text" id="x2" value="2" style="text-align: right">
+            </label>
+        </div>
+        <div style="text-align: center; margin: 40px 0;">
+            <select id="nums">
+                <option value="0" default>Pełna reprezentacja</option>
+                <option value="3">3</option>
+                <option value="6">6</option>
+            </select>
+        </div>
+        <div style="text-align: center; margin: 40px 0;">
+            <input type="button" value="Metoda Siecznych" onclick="secant()">
+            <input type="button" value="Metoda Bisekcji" onclick="bisection()">
+        </div>
     </section>
-    <section id="scores">
-
+    <section id="scores" style="min-height: 100px;">
+        <div id="out"></div>
     </section>
-    <footer id="foot">
-
+    <footer id="foot" style="text-align: center;">
+        Created by Maciej Madejczyk
     </footer>
     <script lang="javascript" async>
-        
+        var f = (x) => {
+            return x * x * x - 0.165 * Math.pow(x, 2) + 3.993 * Math.pow(10, -4)
+        }
+
+        var getRootPrecision = (p) =>{
+            if(p == 0){
+                return 0.0000000001
+            }
+
+            if(p == 3){
+                return 0.001
+            }
+
+            return 0.000001
+        }
+
+        var roundValueToPlaces = (number, prec) => {
+            if(prec == 0){
+                return Math.round((number + Number.EPSILON) * 100000000000000000000)/100000000000000000000
+            }else if(prec == 6){
+                return Math.round((number + Number.EPSILON) * 1000000)/1000000
+            }else{
+                return Math.round((number + Number.EPSILON) * 1000)/1000
+            }
+        }
+
+        var bisection = () =>{
+            var a, b, x0, fa, fb, f0, message, precision
+            precision = document.getElementById('nums').value
+            if(!precision){
+                message = `<font color=#FF0000><b>Element precyzji nie znaleziony</b></font>`
+                document.getElementById("out").innerHTML = message
+                return
+            }
+            
+            a = roundValueToPlaces(parseFloat(document.getElementById('x1').value), precision)
+            b = roundValueToPlaces(parseFloat(document.getElementById('x2').value), precision)
+            if(isNaN(a) || isNaN(b)){
+                message = `<font color=#FF0000><b>Złe krańce zakresu!</b></font>`
+                document.getElementById("out").innerHTML = message
+                return
+            }
+
+            var precisionValue = getRootPrecision(precision)
+
+            fa = roundValueToPlaces(f(a), precision) 
+            fb = roundValueToPlaces(f(b), precision)
+            if(fa * fb > 0){
+                message = "<font color=#FF0000><b>Zła funkcja</b></font>"
+                document.getElementById("out").innerHTML = message
+                return
+            }
+
+            while(Math.abs(a - b) > precisionValue)
+            {
+                x0 = roundValueToPlaces((a + b) / 2, precision)
+                f0 = roundValueToPlaces(f(x0), precision)
+                if(Math.abs(f0) < precisionValue){
+                    break
+                }
+                if(fa * f0 < 0){
+                    b = roundValueToPlaces(x0, precision)
+                }else{
+                    a = roundValueToPlaces(x0, precision)
+                    fa = roundValueToPlaces(f0, precision)
+                }
+            }
+
+            message = `x<sub>0</sub> = ${roundValueToPlaces(x0, precision)}`
+            document.getElementById("out").innerHTML = message
+        }
+
+        var secant = () =>{
+            var a, b, x0, f0, fa, fb, i, message
+            var precision = document.getElementById('nums').value
+            if(!precision){
+                message = `<font color=#FF0000><b>Element precyzji nie znaleziony</b></font>`
+                document.getElementById("out").innerHTML = message
+                return
+            }
+
+            a = roundValueToPlaces(parseFloat(document.getElementById('x1').value), precision)
+            b = roundValueToPlaces(parseFloat(document.getElementById('x2').value), precision)
+
+            if(isNaN(a) || isNaN(b)){
+                message = "<font color=#FF0000>Nieprawidłowe dane!</font>"
+                return
+            }
+
+            var precisionValue = getRootPrecision(precision)
+            fa = roundValueToPlaces(f(a), precision) 
+            fb = roundValueToPlaces(f(b), precision) 
+            i = 64
+            while(i && (Math.abs(a - b) > precision)){
+                if(Math.abs(fa - fb) < precision){
+                    message = "<font color=#FF0000>Złe punkty startowe!</font>"
+                    break
+                }
+                x0 = roundValueToPlaces(a - fa * (a - b) / (fa - fb), precision)
+                f0 = roundValueToPlaces(f(x0), precision)
+                if(Math.abs(f0) < precision){
+                    break
+                } 
+                b = roundValueToPlaces(a, precision)
+                fb = roundValueToPlaces(fa, precision)
+                a = roundValueToPlaces(x0, precision) 
+                fa = roundValueToPlaces(f0, precision)
+                if(!(--i)){
+                    message = "<font color=#FF0000>Przekroczony limit obiegów!</font>"
+                }
+            }
+
+            if(i){
+                message = `x<sub>0</sub> = ${roundValueToPlaces(x0, precision)}`  
+            } 
+            document.getElementById("out").innerHTML = message
+        }
     </script>
 </body>
 </html>
