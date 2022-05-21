@@ -143,13 +143,13 @@
             fb = roundValueToPlaces(f(b), precision) 
             i = 64
             while(i && (Math.abs(a - b) > precision)){
-                if(Math.abs(fa - fb) < precision){
+                if(Math.abs(fa - fb) < precisionValue){
                     message = "<font color=#FF0000>Złe punkty startowe!</font>"
                     break
                 }
                 x0 = roundValueToPlaces(a - fa * (a - b) / (fa - fb), precision)
                 f0 = roundValueToPlaces(f(x0), precision)
-                if(Math.abs(f0) < precision){
+                if(Math.abs(f0) < precisionValue){
                     break
                 } 
                 b = roundValueToPlaces(a, precision)
